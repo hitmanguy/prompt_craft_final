@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
@@ -15,11 +15,16 @@ import { createItem } from '@/app/actions/items';
 import { Card } from '@/components/ui/card';
 import { ImageUp, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { LocationPicker } from './location-picker';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Item name must be at least 3 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
-  location: z.string().min(3, 'Please provide a location.'),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    name: z.string().min(3, 'Please select a location on the map.'),
+  }),
   status: z.enum(['lost', 'found'], { required_error: 'You must select a status.' }),
   photo: z.any()
     .refine((files) => files?.length === 1, 'An image is required.')
@@ -39,6 +44,9 @@ export function ReportItemForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onBlur',
+    defaultValues: {
+      location: undefined
+    }
   });
   const fileRef = form.register('photo');
 
@@ -64,7 +72,7 @@ export function ReportItemForm() {
     const formData = new FormData();
     formData.append('name', values.name);
     formData.append('description', values.description);
-    formData.append('location', values.location);
+    formData.append('location', JSON.stringify(values.location));
     formData.append('status', values.status);
     formData.append('photoDataUri', preview);
 
@@ -149,6 +157,23 @@ export function ReportItemForm() {
             </FormItem>
           )}
         />
+        
+        <Controller
+          control={form.control}
+          name="location"
+          render={({ field, fieldState }) => (
+            <FormItem>
+              <FormLabel>Last Known Location</FormLabel>
+              <FormControl>
+                <LocationPicker
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+               <FormMessage>{fieldState.error?.name?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -171,19 +196,6 @@ export function ReportItemForm() {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea placeholder="Provide details like color, brand, and any distinguishing features." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Known Location</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Central Park, near the carousel" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

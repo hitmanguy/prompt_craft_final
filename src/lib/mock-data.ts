@@ -16,7 +16,11 @@ export const mockItems: Item[] = [
     tags: ['keys', 'toyota', 'metal', 'fob'],
     imageUrl: keysImage!.imageUrl,
     imageHint: keysImage!.imageHint,
-    location: 'Central Park, near the fountain',
+    location: {
+      lat: 40.785091,
+      lng: -73.968285,
+      name: 'Central Park, near the fountain'
+    },
     date: new Date('2024-07-20T14:00:00Z').toISOString(),
     status: 'lost',
     contactInfo: 'jane.doe@example.com',
@@ -31,7 +35,11 @@ export const mockItems: Item[] = [
     tags: ['backpack', 'jansport', 'blue', 'laptop'],
     imageUrl: backpackImage!.imageUrl,
     imageHint: backpackImage!.imageHint,
-    location: 'Main Public Library',
+    location: {
+      lat: 40.712776,
+      lng: -74.005974,
+      name: 'Main Public Library'
+    },
     date: new Date('2024-07-22T10:30:00Z').toISOString(),
     status: 'found',
     contactInfo: 'admin@reuniteme.com',
@@ -46,7 +54,11 @@ export const mockItems: Item[] = [
     tags: ['iphone', 'apple', 'phone', 'electronics'],
     imageUrl: phoneImage!.imageUrl,
     imageHint: phoneImage!.imageHint,
-    location: 'The Daily Grind Coffee',
+    location: {
+      lat: 40.758896,
+      lng: -73.985130,
+      name: 'The Daily Grind Coffee'
+    },
     date: new Date('2024-07-21T18:45:00Z').toISOString(),
     status: 'lost',
     contactInfo: 'lost.phone.user@email.com',
@@ -61,7 +73,11 @@ export const mockItems: Item[] = [
     tags: ['wallet', 'leather', 'cards', 'id'],
     imageUrl: walletImage!.imageUrl,
     imageHint: walletImage!.imageHint,
-    location: 'City Bus - Route 5',
+    location: {
+      lat: 40.730610,
+      lng: -73.935242,
+      name: 'City Bus - Route 5'
+    },
     date: new Date('2024-07-23T08:15:00Z').toISOString(),
     status: 'found',
     contactInfo: 'bus.driver@citytransit.com',

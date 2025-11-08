@@ -4,9 +4,10 @@ import { mockItems } from '@/lib/mock-data';
 import { getUser } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { MapPin, Calendar, Tag, User, Mail, ShieldAlert } from 'lucide-react';
+import { MapPin, Calendar, Tag, Mail, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn, formatDate } from '@/lib/utils';
+import { MapView } from '@/components/map-view';
 
 async function getItem(id: string) {
   // In a real app, this would be a database query.
@@ -66,9 +67,14 @@ export default async function ItemDetailPage({ params }: { params: { id: string 
             </CardHeader>
 
             <CardContent className="flex-grow space-y-4 px-0">
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <MapPin className="h-5 w-5 flex-shrink-0 text-primary" />
-                <span className="font-medium">{item.location}</span>
+               <div className="flex items-start gap-3 text-muted-foreground">
+                <MapPin className="h-5 w-5 flex-shrink-0 text-primary mt-1" />
+                <div className="flex-1">
+                  <span className="font-medium">{item.location.name}</span>
+                   <div className="mt-2 rounded-lg overflow-hidden h-40">
+                     <MapView location={item.location} />
+                   </div>
+                </div>
               </div>
               <div className="flex items-center gap-3 text-muted-foreground">
                 <Calendar className="h-5 w-5 flex-shrink-0 text-primary" />

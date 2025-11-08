@@ -12,7 +12,11 @@ export interface Item {
   tags: string[];
   imageUrl: string;
   imageHint: string;
-  location: string;
+  location: {
+    lat: number;
+    lng: number;
+    name: string;
+  };
   date: string; // ISO 8601 format
   status: 'lost' | 'found';
   contactInfo: string;

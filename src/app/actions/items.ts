@@ -9,7 +9,11 @@ import { revalidatePath } from 'next/cache';
 const FormSchema = z.object({
   name: z.string().min(3, 'Item name must be at least 3 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
-  location: z.string().min(3, 'Location must be at least 3 characters.'),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    name: z.string().min(3, 'Location must be at least 3 characters.'),
+  }),
   status: z.enum(['lost', 'found']),
   photoDataUri: z.string().url('Invalid image data.'),
 });
@@ -23,7 +27,7 @@ export async function createItem(formData: FormData) {
   const validatedFields = FormSchema.safeParse({
     name: formData.get('name'),
     description: formData.get('description'),
-    location: formData.get('location'),
+    location: JSON.parse(formData.get('location') as string),
     status: formData.get('status'),
     photoDataUri: formData.get('photoDataUri'),
   });

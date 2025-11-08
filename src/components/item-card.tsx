@@ -40,7 +40,7 @@ export function ItemCard({ item }: { item: Item }) {
       <CardFooter className="p-4 pt-0 text-xs text-muted-foreground flex flex-col items-start gap-2">
         <div className="flex items-center gap-2">
             <MapPin className="h-3 w-3" />
-            <span className="truncate">{item.location}</span>
+            <span className="truncate">{item.location.name}</span>
         </div>
         <div className="flex items-center gap-2">
             <Calendar className="h-3 w-3" />
