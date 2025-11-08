@@ -4,6 +4,7 @@ import type { Item } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+import { ItemMapView } from '@/components/item-map-view';
 
 export default function Home() {
   const items: Item[] = mockItems;
@@ -20,6 +21,10 @@ export default function Home() {
       </section>
 
       <section className="container mx-auto px-4 py-8">
+        <div className="mb-8 h-96 w-full rounded-lg overflow-hidden">
+          <ItemMapView items={items} />
+        </div>
+
         <div className="mb-8 p-4 bg-card border rounded-lg shadow-sm flex flex-col md:flex-row gap-4 items-center">
           <div className="relative w-full md:flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
