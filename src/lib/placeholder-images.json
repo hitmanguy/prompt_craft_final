@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "keys",
+      "description": "A set of keys on a wooden table.",
+      "imageUrl": "https://images.unsplash.com/photo-1731971027912-46c03dffbdf4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxrZXlzJTIwdGFibGV8ZW58MHx8fHwxNzYyNjE2OTIyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "keys table"
+    },
+    {
+      "id": "backpack",
+      "description": "A blue backpack sitting on a bench.",
+      "imageUrl": "https://images.unsplash.com/photo-1644729693400-fa1a99da2ea3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxiYWNrcGFjayUyMGJlbmNofGVufDB8fHx8MTc2MjYxNjkyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "backpack bench"
+    },
+    {
+      "id": "phone",
+      "description": "A smartphone lying on the grass.",
+      "imageUrl": "https://images.unsplash.com/photo-1672189537494-61810c5584e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwaG9uZSUyMGdyYXNzfGVufDB8fHx8MTc2MjYxNjkyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "phone grass"
+    },
+    {
+      "id": "wallet",
+      "description": "A leather wallet on a dark surface.",
+      "imageUrl": "https://images.unsplash.com/photo-1676276550322-7623a2545b24?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx3YWxsZXQlMjBsZWF0aGVyfGVufDB8fHx8MTc2MjUzMjQ2MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wallet leather"
+    },
+    {
+      "id": "form-placeholder",
+      "description": "An abstract placeholder for image uploads.",
+      "imageUrl": "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWJzdHJhY3QlMjBncmFkaWVudHxlbnwwfHx8fDE3NjI1Mzc1MzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract gradient"
+    }
+  ]
 }

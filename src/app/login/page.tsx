@@ -1,0 +1,25 @@
+import { LoginForm } from '@/components/login-form';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
+
+export default function LoginPage() {
+  return (
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center p-4 animate-in fade-in duration-500">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginForm />
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="font-medium text-primary hover:underline underline-offset-4">
+              Sign Up
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
