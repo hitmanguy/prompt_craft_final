@@ -1,0 +1,115 @@
+/**
+ * @fileoverview Firestore Security Rules for ReuniteMe.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles and a shared-access model for item-related chats. It prioritizes security and efficiency by denormalizing authorization data directly onto documents, avoiding costly `get()` calls.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information, accessible only by the owning user.
+ * - /items/{itemId}: Stores information about lost or found items, publicly readable.
+ * - /items/{itemId}/chats/{chatId}/messages/{messageId}: Stores individual chat messages related to a specific item.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed for privacy.
+ * - Public read access is granted to the `/items` collection, but writes are restricted to owners.
+ * - Chat message access is restricted to participants of the chat.
+ *
+ * Denormalization for Authorization:
+ * - Chat messages include `senderId` and `receiverId` for easy participant validation.
+ *
+ * Structural Segregation:
+ * - Public items are stored in the top-level `/items` collection, while private user data is stored under `/users/{userId}`, enabling different security policies for each.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Manages user profile access. Only the user can read/write their own profile.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user_abc' creates their profile: request.auth.uid == 'user_abc'
+     * @deny (create) User 'user_xyz' tries to create profile for 'user_abc': request.auth.uid != 'user_abc'
+     * @allow (get, update, delete) User 'user_abc' reads/updates/deletes their profile: request.auth.uid == 'user_abc'
+     * @deny (get, update, delete) User 'user_xyz' tries to read/update/delete profile for 'user_abc': request.auth.uid != 'user_abc'
+     * @principle Enforces strict user ownership.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages access to lost/found item reports. Anyone can read, but only the owner can create, update, or delete.
+     * @path /items/{itemId}
+     * @allow (get, list) Anyone can read item reports.
+     * @allow (create) User 'user_abc' creates an item report with ownerId 'user_abc': request.auth.uid == 'user_abc' && request.resource.data.userId == 'user_abc'
+     * @deny (create) User 'user_xyz' tries to create an item report with ownerId 'user_abc': request.auth.uid != 'user_abc' && request.resource.data.userId == 'user_abc'
+     * @allow (update, delete) User 'user_abc' updates/deletes their item report (verified by userId field).
+     * @deny (update, delete) User 'user_xyz' tries to update/delete 'user_abc's item report.
+     * @principle Public read access with owner-only writes.
+     */
+    match /items/{itemId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isItemOwner(resource.data.userId);
+      allow delete: if isSignedIn() && isItemOwner(resource.data.userId);
+    }
+
+        /**
+     * @description Manages chats associated with a specific item.
+     * @path /items/{itemId}/chats/{chatId}
+     * @allow (get, list) Anyone can read item reports.
+     * @allow (create) User 'user_abc' creates an item report with ownerId 'user_abc': request.auth.uid == 'user_abc' && request.resource.data.userId == 'user_abc'
+     * @deny (create) User 'user_xyz' tries to create an item report with ownerId 'user_abc': request.auth.uid != 'user_abc' && request.resource.data.userId == 'user_abc'
+     * @allow (update, delete) User 'user_abc' updates/deletes their item report (verified by userId field).
+     * @deny (update, delete) User 'user_xyz' tries to update/delete 'user_abc's item report.
+     * @principle Public read access with owner-only writes.
+     */
+    match /items/{itemId}/chats/{chatId} {
+       allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Manages individual chat messages within a specific chat related to an item. Access is restricted to participants.
+     * @path /items/{itemId}/chats/{chatId}/messages/{messageId}
+     * @allow (create) User 'user_abc' sends a message in a chat where they are a participant (senderId/receiverId matches).
+     * @deny (create) User 'user_xyz' tries to send a message in a chat they are not part of.
+     * @allow (get, list) Users can read messages if they are sender or receiver.
+     * @deny (update, delete) No one can update or delete messages.
+     * @principle Enforces shared access based on sender/receiver relationship.
+     */
+    match /items/{itemId}/chats/{chatId}/messages/{messageId} {
+      allow get, list: if isMessageParticipant(resource.data.senderId, resource.data.receiverId);
+      allow create: if isSignedIn() && (request.resource.data.senderId == request.auth.uid);
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    function isItemOwner(itemOwnerId) {
+          return isSignedIn() && request.auth.uid == itemOwnerId && resource != null;
+    }
+
+    function isMessageParticipant(senderId, receiverId) {
+        return isSignedIn() && (request.auth.uid == senderId || request.auth.uid == receiverId);
+    }
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile in the ReuniteMe platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "Contact number of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "contactNumber",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Item": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Item",
+      "type": "object",
+      "description": "Represents a lost or found item reported on the platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Item entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Item)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the item."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the item."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location where the item was lost or found."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date when the item was lost or found.",
+          "format": "date-time"
+        },
+        "contactInfo": {
+          "type": "string",
+          "description": "Contact information for the person reporting the item."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the item (e.g., lost, found, claimed)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the item (e.g., electronics, personal items, documents)."
+        },
+        "tags": {
+          "type": "array",
+          "description": "AI-suggested tags for improved searchability.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the item was reported.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the item was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "description",
+        "location",
+        "date",
+        "contactInfo",
+        "status",
+        "category",
+        "tags",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a chat message exchanged between users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ChatMessage entity."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ChatMessage - Sender)"
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ChatMessage - Receiver)"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Reference to Item. (Relationship: Item 1:N ChatMessage - Regarding Item)"
+        },
+        "message": {
+          "type": "string",
+          "description": "Text content of the chat message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the message was sent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "senderId",
+        "receiverId",
+        "itemId",
+        "message",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information.  Path-based ownership for private user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/items/{itemId}",
+        "definition": {
+          "entityName": "Item",
+          "schema": {
+            "$ref": "#/backend/entities/Item"
+          },
+          "description": "Stores information about lost or found items.",
+          "params": [
+            {
+              "name": "itemId",
+              "description": "The unique identifier for the item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/items/{itemId}/chats/{chatId}",
+        "definition": {
+          "entityName": "Chat",
+          "schema": {
+            "$ref": "#/backend/entities/Item"
+          },
+          "description": "Stores chats associated with a specific item.  Includes denormalized item details (e.g., reporters's user ID) for authorization independence.",
+          "params": [
+            {
+              "name": "itemId",
+              "description": "The unique identifier for the item."
+            },
+            {
+              "name": "chatId",
+              "description": "The unique identifier for the chat."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/items/{itemId}/chats/{chatId}/messages/{messageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ChatMessage"
+          },
+          "description": "Stores individual chat messages within a specific chat related to an item. Includes senderId and receiverId.",
+          "params": [
+            {
+              "name": "itemId",
+              "description": "The unique identifier for the item."
+            },
+            {
+              "name": "chatId",
+              "description": "The unique identifier for the chat."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the chat message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the ReuniteMe platform's core features, emphasizing security, scalability, and debuggability. It incorporates chat functionality for users to interact regarding lost and found items.  The structure prioritizes authorization independence by denormalizing necessary authorization data, avoiding the need for `get()` calls in security rules. It employs structural segregation, ensuring that each collection houses documents with similar security requirements. This promotes simple, robust, and easily debuggable security rules.  Path-based ownership is used where appropriate to make security rules efficient.  The addition of the `chats` subcollection maintains a clear structure for managing conversations related to specific items. The `messages` subcollection within each chat facilitates real-time interaction between users. This design allows for easy querying of messages within a chat and simplifies the implementation of security rules, ensuring that only participants of a chat can access its messages. The inclusion of `itemId` in the `ChatMessage` allows the system to link each message to a specific `Item`, improving data context and user experience."
+  }
+}
