@@ -8,10 +8,16 @@ import { MapPin, Calendar, Tag, Mail, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn, formatDate } from '@/lib/utils';
 import { MapView } from '@/components/map-view';
+import { Chat } from '@/components/chat';
+import type { Item } from '@/lib/types';
 
-async function getItem(id: string) {
+
+async function getItem(id: string): Promise<(Item & { receiverId: string }) | undefined> {
   // In a real app, this would be a database query.
-  return mockItems.find((item) => item.id === id);
+  // The receiverId would be the person who posted the item.
+  const item = mockItems.find((item) => item.id === id);
+  if (!item) return undefined;
+  return { ...item, receiverId: item.userId };
 }
 
 export default async function ItemDetailPage({ params }: { params: { id: string } }) {
@@ -22,22 +28,47 @@ export default async function ItemDetailPage({ params }: { params: { id: string 
     notFound();
   }
 
-  const ContactInfo = () => (
-    <Card className="mt-6 bg-secondary/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Mail className="h-5 w-5" />
-          Contact Information
-        </CardTitle>
-        <CardDescription>
-          Please be respectful and only make contact regarding this item.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-lg font-medium">{item.contactInfo}</p>
-      </CardContent>
-    </Card>
-  );
+  const isOwner = user?.id === item.userId;
+
+  const ContactOrChat = () => {
+    if (!user) {
+      return (
+        <Card className="mt-6 border-accent/50 bg-accent/10">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg text-accent-foreground/90">
+              <ShieldAlert className="h-5 w-5 text-accent" />
+              Login to Chat
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-accent-foreground/80">
+              For security, you must be logged in to chat with the owner of this item.
+            </p>
+            <Button asChild className="mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+              <a href="/login">Log In to Chat</a>
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (isOwner) {
+      return (
+         <Card className="mt-6 bg-secondary/50">
+            <CardHeader>
+                <CardTitle>Your Listing</CardTitle>
+                <CardDescription>This is your item listing. You can manage chats with other users here.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Chat itemId={item.id} senderId={user.id} receiverId={item.receiverId} isOwner={true} />
+            </CardContent>
+        </Card>
+      )
+    }
+
+    return <Chat itemId={item.id} senderId={user.id} receiverId={item.receiverId} isOwner={false} />;
+  }
+
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8 animate-in fade-in duration-500">
@@ -99,26 +130,7 @@ export default async function ItemDetailPage({ params }: { params: { id: string 
             </CardContent>
 
             <div className="mt-auto pt-6">
-              {user ? (
-                <ContactInfo />
-              ) : (
-                <Card className="mt-6 border-accent/50 bg-accent/10">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg text-accent-foreground/90">
-                      <ShieldAlert className="h-5 w-5 text-accent" />
-                      Login to View Contact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-accent-foreground/80">
-                      For security, contact information is only visible to logged-in users.
-                    </p>
-                    <Button asChild className="mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                      <a href="/login">Log In to View</a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+              <ContactOrChat />
             </div>
           </div>
         </div>

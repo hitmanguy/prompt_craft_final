@@ -22,3 +22,12 @@ export interface Item {
   contactInfo: string;
   userId: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  itemId: string;
+  message: string;
+  timestamp: any; // Firestore ServerTimestamp
+}

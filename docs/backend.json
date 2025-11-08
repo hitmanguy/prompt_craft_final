@@ -124,6 +124,43 @@
         "updatedAt"
       ]
     },
+    "Chat": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat",
+      "type": "object",
+      "description": "Represents a chat session between two users regarding an item.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Chat entity, composed of item ID and sorted user IDs."
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Reference to the Item this chat is about."
+        },
+        "users": {
+          "type": "array",
+          "description": "An array containing the user IDs of the two participants in the chat.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "The content of the last message sent in the chat."
+        },
+        "lastMessageTimestamp": {
+          "type": "string",
+          "description": "Timestamp of the last message sent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "itemId",
+        "users"
+      ]
+    },
     "ChatMessage": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ChatMessage",
@@ -211,9 +248,9 @@
         "definition": {
           "entityName": "Chat",
           "schema": {
-            "$ref": "#/backend/entities/Item"
+            "$ref": "#/backend/entities/Chat"
           },
-          "description": "Stores chats associated with a specific item.  Includes denormalized item details (e.g., reporters's user ID) for authorization independence.",
+          "description": "Stores chats associated with a specific item. The `chatId` is a composite of the item ID and the sorted user IDs. This document contains denormalized user IDs for authorization.",
           "params": [
             {
               "name": "itemId",
@@ -221,7 +258,7 @@
             },
             {
               "name": "chatId",
-              "description": "The unique identifier for the chat."
+              "description": "The composite identifier for the chat."
             }
           ]
         }

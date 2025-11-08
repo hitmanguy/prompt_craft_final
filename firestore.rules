@@ -16,6 +16,7 @@
  *
  * Denormalization for Authorization:
  * - Chat messages include `senderId` and `receiverId` for easy participant validation.
+ * - Chat documents include an array of `users` for participant validation.
  *
  * Structural Segregation:
  * - Public items are stored in the top-level `/items` collection, while private user data is stored under `/users/{userId}`, enabling different security policies for each.
@@ -58,35 +59,32 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isItemOwner(resource.data.userId);
     }
 
-        /**
-     * @description Manages chats associated with a specific item.
+    /**
+     * @description Manages chats associated with a specific item. Chat documents can only be read/written by participants.
      * @path /items/{itemId}/chats/{chatId}
-     * @allow (get, list) Anyone can read item reports.
-     * @allow (create) User 'user_abc' creates an item report with ownerId 'user_abc': request.auth.uid == 'user_abc' && request.resource.data.userId == 'user_abc'
-     * @deny (create) User 'user_xyz' tries to create an item report with ownerId 'user_abc': request.auth.uid != 'user_abc' && request.resource.data.userId == 'user_abc'
-     * @allow (update, delete) User 'user_abc' updates/deletes their item report (verified by userId field).
-     * @deny (update, delete) User 'user_xyz' tries to update/delete 'user_abc's item report.
-     * @principle Public read access with owner-only writes.
+     * @allow (get, list, create) Users can read/write chat documents if they are a participant.
+     * @deny (update, delete) Chat documents cannot be updated or deleted.
+     * @principle Enforces shared access based on the `users` array.
      */
     match /items/{itemId}/chats/{chatId} {
-       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if false;
+      allow get, list: if isSignedIn() && request.auth.uid in resource.data.users;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.users;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.users;
       allow delete: if false;
     }
 
     /**
      * @description Manages individual chat messages within a specific chat related to an item. Access is restricted to participants.
      * @path /items/{itemId}/chats/{chatId}/messages/{messageId}
-     * @allow (create) User 'user_abc' sends a message in a chat where they are a participant (senderId/receiverId matches).
-     * @deny (create) User 'user_xyz' tries to send a message in a chat they are not part of.
-     * @allow (get, list) Users can read messages if they are sender or receiver.
-     * @deny (update, delete) No one can update or delete messages.
-     * @principle Enforces shared access based on sender/receiver relationship.
+     * @allow (create) A signed-in user can send a message if they are the sender.
+     * @deny (create) A user cannot send a message on behalf of someone else.
+     * @allow (get, list) A user can read messages if they are a participant in the parent chat.
+     * @deny (update, delete) No one can update or delete messages to maintain chat integrity.
+     * @principle Enforces shared access based on the parent chat's participant list.
      */
     match /items/{itemId}/chats/{chatId}/messages/{messageId} {
-      allow get, list: if isMessageParticipant(resource.data.senderId, resource.data.receiverId);
-      allow create: if isSignedIn() && (request.resource.data.senderId == request.auth.uid);
+      allow get, list: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/items/$(itemId)/chats/$(chatId)).data.users;
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
       allow update: if false;
       allow delete: if false;
     }
